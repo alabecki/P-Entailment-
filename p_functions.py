@@ -48,7 +48,7 @@ def get_file(name):
 		if(os.path.exists(name)):
 			_file = open(name, "r+")
 			print("\n")
-			print("Name of file: %s " % (name))
+			print("Name of file: %s \n" % (name))
 			res = [_file, name]
 			return res
 		else:

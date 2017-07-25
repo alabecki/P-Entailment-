@@ -55,12 +55,15 @@ while(True):
 	#rules = {}
 	rules = construct_rules_dict(file)		# parses input text, make a Rule object for each rule, saves objects in dictionary
 	file.seek(0)
+	print("Rules:")
+	for r, rule in rules.items():
+		print(r, rule.item)
 	
 	constraints = add_constraints(file)
 	file.close()
 	print ("Constraints:")
 	for c, con in constraints.items():
-		print(con.item)
+		print(c, con.item)
 	print("\n")
 
 	while True:
