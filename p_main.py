@@ -56,15 +56,16 @@ while(True):
 	rules = construct_rules_dict(file)		# parses input text, make a Rule object for each rule, saves objects in dictionary
 	file.seek(0)
 	print("Rules:")
-	for r, rule in rules.items():
+	for r, rule in sorted(rules.items()):
 		print(r, rule.item)
 	
 	constraints = add_constraints(file)
 	file.close()
 	print ("Constraints:")
-	for c, con in constraints.items():
+	for c, con in sorted(constraints.items()):
 		print(c, con.item)
 	print("\n")
+
 
 	while True:
 		opt = " "
@@ -72,7 +73,7 @@ while(True):
 		print("____________________________________________________________________")
 		while opt not in options.keys():
 			print("What would you like to do?\n")
-			for k, v in options.items():
+			for k, v in sorted(options.items()):
 				print("%s: %s" % (k, v))
 			print("____________________________________________________________________")
 			print("\n")
