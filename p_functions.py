@@ -17,6 +17,7 @@ from p_classes import*
 
 
 def base():
+#Basic set up
 	do = ""
 	res = []
 	while len(res) == 0:
@@ -42,6 +43,7 @@ def base():
 
 
 def get_file(name):
+# Return file and the name of that file
 	while True:
 		if name.endswith(".txt") == False:
 			name = name + ".txt"
@@ -59,8 +61,8 @@ def get_file(name):
 				res = []
 				return res
 
-# Scans the rule file for atomic formulas (letters). This is needed to construct the worlds
 def obtain_atomic_formulas(file):
+	# Scans the rule file for atomic formulas (strings of lettersletters). 
 	propositions = set()
 	for line in file:
 		_line = line.strip()
@@ -88,10 +90,9 @@ def obtain_atomic_formulas(file):
 	return propositions
 
 
-
+def construct_rules_dict(file):
 # Parses each line of the rule file to create a dictionary of rules, distinguishing the item, body and head. The key is the name of the rule
 # while the value is the Rule object itself
-def construct_rules_dict(file):
 	lines = []
 	for line in file:
 		line = line.strip()
@@ -122,6 +123,7 @@ def construct_rules_dict(file):
 	return rules
 
 def add_rule(rule, rules):
+#Adds new rule to the rule dictionary 
 	rule = rule.strip()
 	rule = re.sub(r'\s+', '', rule)
 	step = (re.split("->|\$", rule))
@@ -144,6 +146,7 @@ def add_rule(rule, rules):
 
 
 def add_constraints(file):
+# Adds a new constraint to the 
 	lines = []
 	for line in file:
 		line.strip()
@@ -164,6 +167,7 @@ def add_constraints(file):
 
 
 def prepare_for_SAT(formula):
+# Transforms a formula written as a string to a Symbol object and then converts it to CNF
 	for char in formula:
 		char = Symbol(char)
 	symb_form = to_cnf(formula)
@@ -171,14 +175,14 @@ def prepare_for_SAT(formula):
 
 
 def rule_conditional_formula(rule):
-	print("Body: %s" % (rule.body))
-	print("Head: %s" % (rule.head))
+	#print("Body: %s" % (rule.body))
+	#print("Head: %s" % (rule.head))
 	if rule.head == "FALSE":
 		formula = "~(" + rule.body + ")"
 		return formula
 	if rule.head == "~(FALSE)":
 		formula = rule.body
-		print(formula)
+		#print(formula)
 		return formula
 	if rule.body == "TRUE":
 		formula = rule.head
@@ -193,14 +197,14 @@ def rule_conditional_formula(rule):
 
 
 def rule_to_conjuctive_formula(rule):
-	print("Body: %s" % (rule.body))
-	print("Head: %s" % (rule.head))
+	#print("Body: %s" % (rule.body))
+	#print("Head: %s" % (rule.head))
 	if rule.head == "FALSE":
 		formula = "~(" + rule.body + ")"
 		return formula 
 	if rule.head == "~(FALSE)":
 		formula = rule.body
-		print(formula)
+		#print(formula)
 		return formula
 	if rule.body == "TRUE":
 		formula = rule.head
@@ -213,28 +217,30 @@ def rule_to_conjuctive_formula(rule):
 
 
 def check_tolerance(item, sub_rules, constraints):
+# Check if a given rule (item) is tolerated by the remaining subset of rules.
 	expression = item
-	print(expression)
+	#print(expression)
 	for sub in sub_rules.values():
-		print("Other: %s" % (sub.item))
+	#	print("Other: %s" % (sub.item))
 		other = rule_conditional_formula(sub)
-		print("other before: %s" % (other))
+		#print("other before: %s" % (other))
 		other = prepare_for_SAT(other)
-		print ("Other after: %s" % (other))
+		#print ("Other after: %s" % (other))
 		expression = And(expression, other)
 	for c in constraints.values():
 		restriction = prepare_for_SAT(c.item)
-		print(restriction)
+	#	print(restriction)
 		expression = And(expression, restriction)
-	print("expression: %s" % (expression))
+	#print("expression: %s" % (expression))
 	if satisfiable(expression):
-		print("true")
+	#	print("true")
 		return True
 	else:
-		print("false")
+	#	print("false")
 		return False
 
 def z_partition(rules,constraints):
+# Partitions the set of rules according tollerance (best tolerated rules have lowest ranking)
 	decomposition = dict()
 	count = 0
 	remaining_rules = deepcopy(rules)
@@ -242,51 +248,52 @@ def z_partition(rules,constraints):
 	num_rules = len(rules.keys())
 	trials = 0
 	while len(remaining_rules.keys()) > 0 and count <= num_rules:
-		print("Len rules: %s" % (len(remaining_rules.keys())))
-		print("Remaining rules:")
-		for k, v in remaining_rules.items():
-			print(k, v.item)
+		#print("Len rules: %s" % (len(remaining_rules.keys())))
+		#print("Remaining rules:")
+		#for k, v in remaining_rules.items():
+		#	print(k, v.item)
 		temp = []
-		for r in remaining_rules.keys():
-			print(r, end=" ")
+		#for r in remaining_rules.keys():
+		#	print(r, end=" ")
 		for r, rule in remaining_rules.items():
-			print("Current rule: %s" % (rule.item))
+		#	print("Current rule: %s" % (rule.item))
 			comp = deepcopy(remaining_rules)
 			del comp[r]
 			item = deepcopy(rule)
 			item = rule_to_conjuctive_formula(item)
-			print(item)
+			#print(item)
 			item = prepare_for_SAT(item)
-			print(item)
+			#print(item)
 			if check_tolerance(item, comp, constraints) == True:
 				temp.append(rule)
-				print("Count: %s" % (count))
-				print("rule: %s" % (rule.item))
+				#print("Count: %s" % (count))
+				#print("rule: %s" % (rule.item))
 				rules[r].Z = count 
-				print("rule z: %s" % (rules[r].Z))
-				for t in temp:
-					print( t.item)
+				#print("rule z: %s" % (rules[r].Z))
+				#for t in temp:
+				#	print( t.item)
 				del remaining_shadow[r]
 		name = "d" + str(count)
 		decomposition[name] = temp
 		remaining_rules = deepcopy(remaining_shadow)
 		if len(remaining_rules.keys()) == 0:
 			break
-		print("Current len remaining rules: %s" % (len(remaining_rules.keys())))
+		#print("Current len remaining rules: %s" % (len(remaining_rules.keys())))
 		count += 1
 	if len(remaining_rules.keys()) > 0 :
 		decomposition = dict()
 	return decomposition
 
 
-def entailment_0Z(a, b, rules, constraints):			#Need to limit consideration to worlds under consideration
+def entailment_0Z(a, b, rules, constraints):			
+# If adding a -> ~b makes R inconsistant, conclude that a -> b 
 	KB = deepcopy(rules)
 	new = "(" + a + "->" + "~(" + b + ") )"
-	print("new: %s" % (new))
+	#print("new: %s" % (new))
 	add_rule(new, KB)
-	print("KB:")
-	for k, v in KB.items():
-		print(k, v.item)
+	#print("KB:")
+	#for k, v in KB.items():
+	#	print(k, v.item)
 	decomp = z_partition(KB, constraints)
 	if len(decomp.keys()) == 0:
 		return True
